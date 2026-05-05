@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rural Center - Admin System</title>
+    <style>
+        /* CSS remains unchanged to preserve all functions and styling[cite: 1] */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f7f6;
+            overflow-x: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        nav {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo { font-size: 1.5rem; font-weight: bold; letter-spacing: 1px; }
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .nav-links a, .admin-btn {
+            color: white;
+            text-decoration: none;
+            padding: 0.4rem 0.6rem;
+            border-radius: 20px;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            background: transparent;
+            font-size: 0.9rem;
+        }
+        .nav-links a:hover, .admin-btn:hover { 
+            color: #ffd700;
+            background: rgba(255,255,255,0.1);
+        }
+
+        section {
+            display: none;
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+
+        #home {
+            display: flex;
+            align-items: center; 
+            justify-content: center;
+            text-align: center; 
+            color: white; 
+            border-radius: 0 0 50px 50px;
+            padding: 100px 20px 50px 20px;
+            background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('hospital.png'); 
+            background-size: cover; 
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .services-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); 
+            gap: 1.5rem; 
+        }
+        .service { 
+            background: white; 
+            padding: 0; 
+            border-radius: 15px; 
+            text-align: center; 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1); 
+            transition: transform 0.3s; 
+            overflow: hidden; 
+            cursor: pointer; 
+        }
+        .service:hover { transform: translateY(-5px); }
+        
+        .service-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+        
+        .service-info {
+            padding: 1.5rem;
+        }
+        .service-info h3 { color: #764ba2; margin-bottom: 10px; font-size: 1.2rem; }
+
+        #adminPanel {
+            display: none;
+            padding-top: 80px;
+            background: #f0f2f5;
+            min-height: 100vh;
+        }
+
+        .container { padding: 40px 15px; max-width: 1200px; margin: 0 auto; }
+        .admin-container { max-width: 1100px; margin: 0 auto; padding: 15px; }
+        
+        .dashboard-card {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%; border-collapse: collapse; margin-bottom: 10px;
+            background: white; border-radius: 10px; min-width: 500px;
+        }
+        th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: left; font-size: 0.9rem; }
+        th { background-color: #764ba2; color: white; text-transform: uppercase; font-size: 0.75rem; }
+
+        .logout-btn { background: #333; color: white; padding: 8px 15px; border: none; border-radius: 5px; cursor: pointer; }
+        .del-btn { background: #ff6b6b; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; }
+        .view-btn { background: #667eea; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 0.75rem; margin-right: 5px; }
+        .reset-btn { background: #ff4757; color: white; padding: 8px 12px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 0.8rem; }
+
+        .form-section { background: linear-gradient(135deg, #667eea, #764ba2); color: white; border-radius: 20px; padding: 30px 20px; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .submit-btn { grid-column: span 2; background: #ff6b6b; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1rem; width: 100%; }
+
+        .modal { 
+            display: none; 
+            position: fixed; 
+            z-index: 2000; 
+            left: 0; top: 0; 
+            width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.7); 
+            align-items: center; 
+            justify-content: center; 
+            backdrop-filter: blur(5px); 
+            padding: 10px;
+        }
+        
+        .modal-content { 
+            background: white; 
+            padding: 1.5rem; 
+            border-radius: 20px; 
+            width: 100%; 
+            max-width: 400px; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            text-align: center; 
+            position: relative; 
+        }
+        
+        .modal-input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 8px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 1rem; 
+        }
+
+        @media (max-width: 768px) {
+            .logo { font-size: 1.2rem; }
+            .nav-links a, .admin-btn { font-size: 0.8rem; padding: 0.4rem 0.4rem; }
+            .form-grid { grid-template-columns: 1fr; }
+            .submit-btn { grid-column: span 1; }
+            #home h1 { font-size: 2.2rem !important; }
+            #home p { font-size: 1rem !important; }
+            .admin-container h2 { font-size: 1.5rem !important; }
+            header nav { padding: 0 0.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <nav>
+            <div class="logo">MediCare</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showPage('home')">Home</a></li>
+                <li><a href="#" onclick="showPage('services')">Services</a></li>
+                <li><a href="#" onclick="showPage('contact')">Contact</a></li>
+                <li><button class="admin-btn" onclick="openAdminModal()">Admin</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main id="mainPage">
+        <section id="home" style="display: flex;">
+            <div>
+                <h1 style="font-size: 3.5rem; margin-bottom: 10px;">Your Health, Our Priority</h1>
+                <p style="font-size: 1.2rem; opacity: 0.9;">World-class healthcare with compassionate care</p>
+                <br>
+                <button onclick="showPage('book')" style="background:#fff; color:#764ba2; padding:15px 35px; border:none; border-radius:50px; font-weight:bold; box-shadow: 0 10px 20px rgba(0,0,0,0.2); cursor:pointer; font-size: 1rem;">
+                    Book Appointment
+                </button>
+            </div>
+        </section>
+
+        <section id="services">
+            <div class="container">
+                <h2 style="text-align:center; margin-bottom:10px; font-size: 2rem; color: #444;">Our Services</h2>
+                <p style="text-align:center; margin-bottom:30px; color: #666;">Click a service for more details and long descriptions.</p>
+                <div class="services-grid">
+                    <!-- Emergency -->
+                    <div class="service" onclick="openServiceModal('Emergency Care', 'Our Emergency Unit provides immediate medical attention for life-threatening situations 24 hours a day, 7 days a week. We are fully equipped with advanced life-support technology and staffed by highly trained trauma specialists. From sudden accidents to critical illnesses, our team ensures rapid response and compassionate care when every second counts.')">
+                        <img src="emergency.png" alt="Emergency" class="service-img" onerror="this.src='https://images.unsplash.com/photo-1583337130417-3346a1be7dee?auto=format&fit=crop&q=80&w=500'">
+                        <div class="service-info">
+                            <h3>Emergency Care</h3>
+                            <p>Fast and reliable medical help available 24/7.</p>
+                        </div>
+                    </div>
+
+                    <!-- Dental -->
+                    <div class="service" onclick="openServiceModal('Dental Services', 'Our Dental Clinic offers a wide range of oral health solutions including routine cleaning, painless tooth extractions, and professional fillings. We use modern equipment to ensure patient comfort and hygiene. Whether you need a simple check-up or treatment for toothaches, our dentists are dedicated to giving you a healthy and bright smile.')">
+                        <img src="dental.png" alt="Dental" class="service-img" onerror="this.src='https://images.unsplash.com/photo-1588776814546-1ffcf47267a5?auto=format&fit=crop&q=80&w=500'">
+                        <div class="service-info">
+                            <h3>Dental Care</h3>
+                            <p>Expert treatments for healthy teeth and gums.</p>
+                        </div>
+                    </div>
+
+                    <!-- General Check-up -->
+                    <div class="service" onclick="openServiceModal('General Health Check-up', 'Prevention is better than cure. Our comprehensive health check-up includes monitoring your blood pressure, sugar levels, and overall body function. We provide personalized health advice based on your physical assessment to help you stay healthy and catch any potential health issues early before they become serious.')">
+                        <img src="checkup.png" alt="Checkup" class="service-img" onerror="this.src='https://images.unsplash.com/photo-1576091160550-2173dba999ef?auto=format&fit=crop&q=80&w=500'">
+                        <div class="service-info">
+                            <h3>General Check-up</h3>
+                            <p>Routine body screening to keep you healthy.</p>
+                        </div>
+                    </div>
+
+                    <!-- Pediatrics -->
+                    <div class="service" onclick="openServiceModal('Pediatric Care', 'We specialize in the medical care of infants, children, and adolescents. Our services include regular growth monitoring, required immunizations (vaccines), and nutritional guidance. Our child-friendly clinic environment is designed to make your little ones feel safe and comfortable while receiving the best pediatric care.')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3774/3774278.png" alt="Pediatrics" class="service-img" style="object-fit: contain; padding: 20px; background: #fff;" onerror="this.src='https://images.unsplash.com/photo-1502740479735-534433446059?auto=format&fit=crop&q=80&w=500'">
+                        <div class="service-info">
+                            <h3>Pediatrics</h3>
+                            <p>Specialized care for infants and children.</p>
+                        </div>
+                    </div>
+
+                    <!-- Cardiology -->
+                    <div class="service" onclick="openServiceModal('Cardiology Unit', 'Your heart health is vital. Our cardiology team uses advanced diagnostic tools like ECG to monitor heart rhythms and detect abnormalities. We offer treatment and management plans for hypertension, heart disease, and other cardiovascular conditions to ensure your heart stays strong and healthy.')">
+                        <img src="https://images.unsplash.com/photo-1628348068343-c6a848d2b6dd?auto=format&fit=crop&q=80&w=500" alt="Cardiology" class="service-img" onerror="this.src='https://via.placeholder.com/500x300?text=Cardiology+Image'">
+                        <div class="service-info">
+                            <h3>Cardiology</h3>
+                            <p>Advanced heart monitoring and treatments.</p>
+                        </div>
+                    </div>
+
+                    <!-- Eye Clinic -->
+                    <div class="service" onclick="openServiceModal('Eye Clinic & Vision Care', 'We provide expert eye examinations for patients with blurry vision or eye discomfort. Our services include prescription of eyeglasses, treatment for minor eye infections, and screening for common eye diseases. We help you maintain clear vision and healthy eyes through professional eye care services.')">
+                        <img src="eye.png" alt="Eyes" class="service-img" onerror="this.src='https://images.unsplash.com/photo-1596704017254-9b121068fb31?auto=format&fit=crop&q=80&w=500'">
+                        <div class="service-info">
+                            <h3>Eye Clinic</h3>
+                            <p>Professional check-ups for better vision.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Other sections remain as requested to preserve functionality[cite: 1] -->
+        <section id="contact">
+            <div class="container">
+                <div class="dashboard-card" style="text-align: center;">
+                    <h2 style="color: #764ba2; margin-bottom: 20px; font-size: 2rem;">Contact Us</h2>
+                    <p style="font-size: 1.1rem; color: #555; margin-bottom: 10px;">📍 Poblacion Getafe Bohol</p>
+                    <p style="font-size: 1.1rem; color: #555; margin-bottom: 10px;">📞 0929 447 7025</p>
+                    <p style="font-size: 1.1rem; color: #555; margin-bottom: 20px;">📧 Getafe21@medicare.com</p>
+                    <button onclick="openMessageModal()" class="submit-btn" style="max-width: 250px; margin: 0 auto; grid-column: auto;">Message Us</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="book">
+            <div class="container">
+                <div class="form-section">
+                    <h2 style="text-align:center; margin-bottom:20px;">Book Appointment</h2>
+                    <form class="form-grid" onsubmit="bookAppt(event)">
+                        <input type="text" id="name" placeholder="Full Name" required style="padding:12px; border-radius:8px; border:none;">
+                        <input type="tel" id="phone" placeholder="Phone Number" required style="padding:12px; border-radius:8px; border:none;">
+                        <input type="email" id="email" placeholder="Email Address" required style="padding:12px; border-radius:8px; border:none;">
+                        <input type="text" id="address" placeholder="Home Address" required style="padding:12px; border-radius:8px; border:none;">
+                        <select id="dept" required style="padding:12px; border-radius:8px; border:none;">
+                            <option value="">Select Service</option>
+                            <option value="Emergency">Emergency</option>
+                            <option value="Dental">Dental Care</option>
+                            <option value="Checkup">General Check-up</option>
+                            <option value="Cardiology">Cardiology</option>
+                            <option value="Pediatrics">Pediatrics</option>
+                            <option value="EyeClinic">Eye Clinic</option>
+                        </select>
+                        <input type="date" id="date" required style="padding:12px; border-radius:8px; border:none;">
+                        <select id="time" required style="padding:12px; border-radius:8px; border:none;">
+                            <option value="" disabled selected hidden>Schedule your appointment</option>
+                            <option value="8:00 AM">8:00 AM</option>
+                            <option value="9:00 AM">9:00 AM</option>
+                            <option value="10:00 AM">10:00 AM</option>
+                            <option value="1:00 PM">1:00 PM</option>
+                            <option value="2:00 PM">2:00 PM</option>
+                            <option value="3:00 PM">3:00 PM</option>
+                        </select>
+                        <button type="submit" class="submit-btn">Confirm Appointment</button>
+                    </form>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for Service Info -->
+    <div id="serviceInfoModal" class="modal">
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size: 28px; color: #999;" onclick="closeServiceModal()">&times;</span>
+            <h2 id="serviceInfoTitle" style="margin-bottom:15px; color: #764ba2;">Service Detail</h2>
+            <p id="serviceInfoDetail" style="margin-bottom:20px; color: #555; text-align: justify;"></p>
+            <button class="submit-btn" style="background: #764ba2; grid-column: span 1;" onclick="showPage('book'); closeServiceModal();">Book this Service</button>
+        </div>
+    </div>
+
+    <!-- Modals for Communication and Admin[cite: 1] -->
+    <div id="messageModal" class="modal">
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size: 28px; color: #999;" onclick="closeMessageModal()">&times;</span>
+            <h2 style="margin-bottom:15px; color: #764ba2;">Send a Message</h2>
+            <input type="text" id="msgName" placeholder="Your Name" class="modal-input" required>
+            <textarea id="msgContent" placeholder="Message..." class="modal-input" style="height: 100px; resize: none;" required></textarea>
+            <button class="submit-btn" style="margin-top: 15px; grid-column: span 1;" onclick="sendMessage()">Send Message</button>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span style="float:right; cursor:pointer; font-size: 28px; color: #999;" onclick="closeAdminModal()">&times;</span>
+            <h2 style="margin-bottom:15px; color: #764ba2;">Admin Login</h2>
+            <input type="text" id="adminUser" placeholder="Username" class="modal-input">
+            <input type="password" id="adminPass" placeholder="Password" class="modal-input">
+            <button class="submit-btn" style="margin-top: 15px; background: #764ba2; grid-column: span 1;" onclick="loginAdmin()">Login</button>
+        </div>
+    </div>
+
+    <div id="adminPanel">
+        <div class="admin-container">
+            <div style="display:flex; flex-wrap: wrap; justify-content:space-between; align-items:center; gap: 10px; margin-bottom:20px;">
+                <h2 style="color: #444; font-size: 1.5rem;">Admin Dashboard</h2>
+                <div style="display: flex; gap: 5px;">
+                    <button class="reset-btn" onclick="resetAllData()">Reset</button>
+                    <button class="logout-btn" onclick="showPage('home')">Logout</button>
+                </div>
+            </div>
+            <div class="dashboard-card">
+                <h3 style="margin-bottom:10px; color: #667eea; font-size: 1rem;">📩 Messages</h3>
+                <table>
+                    <thead><tr><th>Sender</th><th>Preview</th><th>Action</th></tr></thead>
+                    <tbody id="msgBody"></tbody>
+                </table>
+            </div>
+            <div class="dashboard-card">
+                <h3 style="margin-bottom:10px; color: #764ba2; font-size: 1rem;">📅 Appointments</h3>
+                <table>
+                    <thead><tr><th>Patient</th><th>Service</th><th>Schedule</th><th>Action</th></tr></thead>
+                    <tbody id="apptBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <footer style="background:#2c3e50; color:white; text-align:center; padding:1.5rem 10px; margin-top: 50px;">
+        <p style="font-size: 0.8rem;">© 2026 MediCare Hospital | Bohol | 09294477025</p>
+    </footer>
+
+    <script>
+        /* JavaScript functions remain intact to preserve all functionality[cite: 1] */
+        let appointments = JSON.parse(localStorage.getItem('appointments')) || [];
+        let messages = JSON.parse(localStorage.getItem('user_messages')) || [];
+
+        function openServiceModal(title, detail) {
+            document.getElementById('serviceInfoTitle').innerText = title;
+            document.getElementById('serviceInfoDetail').innerText = detail;
+            document.getElementById('serviceInfoModal').style.display = 'flex';
+        }
+        function closeServiceModal() {
+            document.getElementById('serviceInfoModal').style.display = 'none';
+        }
+
+        function showPage(pageId) {
+            const sections = document.querySelectorAll('main section');
+            sections.forEach(sec => sec.style.display = 'none');
+            document.getElementById('adminPanel').style.display = 'none';
+            document.getElementById('mainPage').style.display = 'block';
+            if (pageId === 'admin') {
+                document.getElementById('mainPage').style.display = 'none';
+                document.getElementById('adminPanel').style.display = 'block';
+                loadAdminData();
+            } else {
+                const activeSection = document.getElementById(pageId);
+                if (pageId === 'home') activeSection.style.display = 'flex';
+                else if (activeSection) activeSection.style.display = 'block';
+                window.scrollTo(0,0);
+            }
+        }
+
+        function openAdminModal() { document.getElementById('adminModal').style.display = 'flex'; }
+        function closeAdminModal() { document.getElementById('adminModal').style.display = 'none'; }
+
+        function loginAdmin() {
+            const user = document.getElementById('adminUser').value;
+            const pass = document.getElementById('adminPass').value;
+            if (user === "admin" && pass === "password") {
+                closeAdminModal();
+                showPage('admin');
+            } else { alert("Invalid credentials."); }
+        }
+
+        function openMessageModal() { document.getElementById('messageModal').style.display = 'flex'; }
+        function closeMessageModal() {
+            document.getElementById('messageModal').style.display = 'none';
+            document.getElementById('msgName').value = '';
+            document.getElementById('msgContent').value = '';
+        }
+
+        function sendMessage() {
+            const name = document.getElementById('msgName').value;
+            const content = document.getElementById('msgContent').value;
+            if(name && content) {
+                const newMsg = { sender: name, text: content, time: new Date().toLocaleString() };
+                messages.unshift(newMsg);
+                localStorage.setItem('user_messages', JSON.stringify(messages));
+                alert("✅ Message Sent!");
+                closeMessageModal();
+            } else { alert("Please fill all fields."); }
+        }
+
+        function bookAppt(e) {
+            e.preventDefault();
+            const apt = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value,
+                address: document.getElementById('address').value,
+                dept: document.getElementById('dept').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value
+            };
+            appointments.unshift(apt);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            alert('✅ Success! Appointment Booked.');
+            e.target.reset();
+        }
+
+        function loadAdminData() {
+            const msgBody = document.getElementById('msgBody');
+            msgBody.innerHTML = messages.map((m, i) => `<tr>
+                <td>${m.sender}</td>
+                <td>${m.text.substring(0, 15)}...</td>
+                <td><button class="del-btn" onclick="deleteMsg(${i})">Del</button></td>
+            </tr>`).join('');
+
+            const apptBody = document.getElementById('apptBody');
+            apptBody.innerHTML = appointments.map((a, i) => 
+                `<tr><td>${a.name}</td><td>${a.dept}</td><td>${a.date}</td><td><button class="del-btn" onclick="deleteAppt(${i})">X</button></td></tr>`
+            ).join('');
+        }
+
+        function deleteMsg(i) {
+            messages.splice(i, 1);
+            localStorage.setItem('user_messages', JSON.stringify(messages));
+            loadAdminData();
+        }
+
+        function deleteAppt(i) {
+            appointments.splice(i, 1);
+            localStorage.setItem('appointments', JSON.stringify(appointments));
+            loadAdminData();
+        }
+
+        function resetAllData() {
+            if(confirm("Delete all data?")) {
+                localStorage.clear();
+                appointments = [];
+                messages = [];
+                loadAdminData();
+            }
+        }
+
+        window.onclick = function(event) {
+            if (event.target.className === 'modal') {
+                document.getElementById('adminModal').style.display = 'none';
+                document.getElementById('messageModal').style.display = 'none';
+                document.getElementById('serviceInfoModal').style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
